@@ -39,7 +39,7 @@ Complete the function processLogin, it has the following parameter(s):
 
 ### Returns
 
-  `string[]`: an array of user ids as strings, sorteed ascending by numeric value.
+  `string[]`: an array of user ids as strings, sorted ascending by numeric value.
 
 ### Constraints
 

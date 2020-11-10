@@ -38,46 +38,18 @@ function processLogs(logs, threshold) {
   let result = [];
   let totalCounter = new Map();
 
-  //Constraints
-  if (logs.length > Math.pow(10, 5) ||
-      logs.length === 0 ||
-      threshold > logs.length ||
-      threshold === 0)
-        return result = [0];
-
-  const regex = RegExp('^[1-9][0-9]*$');
+  if (haveConstraints(logs, threshold))
+      return result = [0]; // 0 means error
 
   logs.forEach( log => {
     let logTokens = log.split(' ');
 
-    //Constraints
-    if(!regex.test(logTokens[0]) ||
-       !regex.test(logTokens[1]) ||
-       !regex.test(logTokens[2]) ||
-       logTokens[0].length === 0 ||
-       logTokens[0].length > 9 ||
-       logTokens[1].length === 0 ||
-       logTokens[1].length > 9 ||
-       logTokens[2].length === 0 ||
-       logTokens[2].length > 9 )
-          return result = [0];
+    if(isNotValidFormat(logTokens))
+          return result = [0]; // 0 means error
 
-    if(!totalCounter.has(logTokens[0]))
-      totalCounter.set(logTokens[0], 0);
+    initializeCounters(logTokens[0],logTokens[1]);
 
-    if(!totalCounter.has(logTokens[1]))
-      totalCounter.set(logTokens[1], 0);
-
-    if(logTokens[0] === logTokens[1]) {
-      totalCounter.set(logTokens[0], totalCounter.get(logTokens[0])++);
-
-    } else {
-
-      totalCounter.set(logTokens[0], totalCounter.get(logTokens[0])++);
-      totalCounter.set(logTokens[1], totalCounter.get(logTokens[1])++);
-
-    }
-
+    addCounters(logTokens[0],logTokens[1]);
   });
 
   for (let [key, value] of totalCounter) {
@@ -88,6 +60,52 @@ function processLogs(logs, threshold) {
   result.sort((a, b) => a - b);
 
   return result;
+}
+
+// Check length contraints.
+function haveConstraints(l, t){
+  let lHasConstraints = l.length > Math.pow(10, 5) ||
+                        l.length === 0;
+  let tHasConstraints = t > logs.length || t === 0;
+
+  return lHasConstraints || tHasConstraints;
+}
+
+// Check length and format constraints 
+function isNotValidFormat(values) {
+  // In range ascii[0-9] and starts with non-zero
+  const regex = RegExp('^[1-9][0-9]*$');
+
+  values.forEach( value => {
+    if (!regex.test(value) ||
+         value.length === 0 ||
+         value.length > 9)
+
+        return true;
+    }
+  );
+
+  return false;
+}
+
+// Initialize counter to zero if not exist in HashMap
+function initializeCounters(sender, receiver) {
+    if(!totalCounter.has(sender))
+      totalCounter.set(sender, 0);
+
+    if(!totalCounter.has(receiver))
+      totalCounter.set(receiver, 0);
+}
+
+function addCounters(sender, receiver) {
+  if(sender === receiver) {
+    totalCounter.set(sender, totalCounter.get(sender)++);
+
+  } else {
+
+    totalCounter.set(sender, totalCounter.get(sender)++);
+    totalCounter.set(receiver, totalCounter.get(receiver)++);
+  }
 }
 
 function main() {
